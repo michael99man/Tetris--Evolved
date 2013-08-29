@@ -6,6 +6,7 @@ import gameObjects.Tetromino;
 import java.awt.Font;
 import java.io.File;
 import java.util.LinkedList;
+import java.util.Random;
 
 import menu.MainMenu;
 import menu.Menu;
@@ -33,8 +34,7 @@ public class Engine extends BasicGame {
 	public TrueTypeFont title;
 	public TrueTypeFont text;
 
-	public static State state;
-
+	
 	// Parent
 	private AppGameContainer parent;
 	private Menu menu;
@@ -44,6 +44,10 @@ public class Engine extends BasicGame {
 
 	// GAME RELATED STUFF
 	// ----------------------------------------------------------
+	public static State state;
+	
+	private Random rand = new Random();
+	
 	private LinkedList<Block> stationaryBlocks = new LinkedList<Block>();
 
 	public static boolean[][] blockArray = new boolean[20][10];
@@ -110,12 +114,11 @@ public class Engine extends BasicGame {
 
 			g.drawImage(BACKGROUND, 165, 126);
 
-			
-			
 			if (!falling) {
 				falling = true;
 
-				tetromino = new Tetromino(Tetromino.Type.reverselBlock);
+				
+				tetromino = new Tetromino(Tetromino.Type.values()[rand.nextInt(6)]);
 			} else if (falling) {
 				if (secondPassed) {
 
@@ -270,7 +273,7 @@ public class Engine extends BasicGame {
 
 					}
 				}
-				
+
 				falling = false;
 
 			} else if (input.isKeyPressed(Input.KEY_P)) {

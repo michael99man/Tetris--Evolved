@@ -16,13 +16,18 @@ public class Block {
 	public int coordX;
 	public int coordY;
 
-
 	private static final String[] linkList = { "REDDD", "GREEN",
 			"resources/BLUE_BLOCK.png", "4", "5", "6" };
 
-	public Block(Color color) throws SlickException {
+	public Block(Color color, int x, int y) throws SlickException {
 		this.color = color;
 
+		coordX = x;
+		coordY = y;
+
+		this.x = getCX(x);
+		this.y = getCY(y);
+				
 		img = new Image(linkList[color.ordinal()]);
 
 	}
@@ -34,54 +39,58 @@ public class Block {
 
 	}
 
-	
 	public boolean willIntersect(String direction) {
 
-		
-		try{
-		
-		
-			if (direction.equalsIgnoreCase("down")){
-				
-				//Catching maximum triggers (20, 1, 10)
-				if (coordY == 20){
+		try {
+
+			if (direction.equalsIgnoreCase("down")) {
+
+				// Catching maximum triggers (20, 1, 10)
+				if (coordY == 20) {
 					return true;
 				}
-				
-				if (Engine.blockArray[coordY - 1 + 1][coordX - 1]){
+
+				if (Engine.blockArray[coordY - 1 + 1][coordX - 1]) {
 					return true;
 				}
-			} else if (direction.equalsIgnoreCase("left")){
-				
-				if (coordX == 1){
+			} else if (direction.equalsIgnoreCase("left")) {
+
+				if (coordX == 1) {
 					return true;
 				}
-				
-				if (Engine.blockArray[coordY - 1][coordX - 1 - 1]){
+
+				if (Engine.blockArray[coordY - 1][coordX - 1 - 1]) {
 					return true;
 				}
-			} else if (direction.equalsIgnoreCase("right")){
-				if (coordX == 10){
+			} else if (direction.equalsIgnoreCase("right")) {
+				if (coordX == 10) {
 					return true;
 				}
-				
-				if (Engine.blockArray[coordY - 1][coordX - 1 + 1]){
+
+				if (Engine.blockArray[coordY - 1][coordX - 1 + 1]) {
 					return true;
 				}
 			}
 
-		} catch (Exception e){
+		} catch (Exception e) {
 			System.out.println("EXCEPTION: x - " + coordX + " y - " + coordY);
 		}
-			
-			return false;
+
+		return false;
 
 	}
 
+	private static int getCX(int x){
+		return 165 + ((x-1) * Engine.BLOCKSIZE); 
+	}
 
+	private static int getCY(int y){
+		return 125 + ((y-1) * Engine.BLOCKSIZE);
+	}
+	
 	public void mark(boolean b) {
-		
-		//2D array is [Y VALUE][X VALUE]
+
+		// 2D array is [Y VALUE][X VALUE]
 		Engine.blockArray[coordY - 1][coordX - 1] = b;
 	}
 }
