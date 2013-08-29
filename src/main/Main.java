@@ -25,7 +25,13 @@ public class Main {
 			
 			
 			//Basic setup
-			app.setShowFPS(false);
+			app.setShowFPS(true);
+			
+			//Sets FPS to 60
+			app.setTargetFrameRate(59);
+			
+			//app.setMaximumLogicUpdateInterval(1);
+			//app.setMinimumLogicUpdateInterval(1);
 			
 
 
