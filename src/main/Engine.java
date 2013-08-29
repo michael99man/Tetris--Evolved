@@ -1,6 +1,7 @@
 package main;
 
 import gameObjects.Block;
+import gameObjects.Tetromino;
 
 import java.awt.Font;
 import java.io.File;
@@ -42,7 +43,7 @@ public class Engine extends BasicGame {
 	private boolean secondPassed = false;
 
 	// GAME RELATED STUFF
-	// -------------------
+	// ----------------------------------------------------------
 	private LinkedList<Block> stationaryBlocks = new LinkedList<Block>();
 
 	public static boolean[][] blockArray = new boolean[20][10];
@@ -50,6 +51,7 @@ public class Engine extends BasicGame {
 	// If a block is falling
 	private boolean falling = false;
 	private Block tempBlock;
+	private Tetromino tetromino;
 
 	// Temporary Borders and Background
 
@@ -57,7 +59,7 @@ public class Engine extends BasicGame {
 	private static final int BG_WIDTH = 270;
 	private static final int BG_HEIGHT = 540;
 
-	private static final int BLOCKSIZE = 27;
+	public static final int BLOCKSIZE = 27;
 
 	private static final int STARTX = 150;
 	private static final int STARTY = 110;
@@ -108,29 +110,39 @@ public class Engine extends BasicGame {
 
 			g.drawImage(BACKGROUND, 165, 126);
 
+			
+			
 			if (!falling) {
 				falling = true;
 
-				tempBlock = new Block(Block.Color.BLUE);
-				tempBlock.x = STARTX + BORDER_SIZE + 135;
-				tempBlock.y = STARTY + BORDER_SIZE + 1;
-
-				tempBlock.coordX = 6;
-				tempBlock.coordY = 1;
-
+				tetromino = new Tetromino(Tetromino.Type.reverselBlock);
 			} else if (falling) {
 				if (secondPassed) {
-					tempBlock.y += BLOCKSIZE;
 
-					if (tempBlock.willIntersect("down")) {
-						System.out.println("Reached the bottom!");
-						stationaryBlocks.add(tempBlock);
-						falling = false;
+					boolean stop = false;
+
+					for (Block b : tetromino.bottomList) {
+						if (b.willIntersect("down")) {
+							stop = true;
+							falling = false;
+							System.out
+									.println("Tetromino has reached the bottom!");
+						}
 					}
-					
-					tempBlock.mark(false);
-					tempBlock.coordY++;
-					tempBlock.mark(true);
+
+					if (!stop) {
+						for (Block b : tetromino.blockList) {
+							b.mark(false);
+							b.y += BLOCKSIZE;
+							b.coordY++;
+							// Marking done at the end.
+
+						}
+					} else {
+						for (Block b : tetromino.blockList) {
+							stationaryBlocks.add(b);
+						}
+					}
 				}
 			}
 
@@ -138,7 +150,10 @@ public class Engine extends BasicGame {
 				g.drawImage(b.img, b.x, b.y);
 			}
 
-			g.drawImage(tempBlock.img, tempBlock.x, tempBlock.y);
+			for (Block b : tetromino.blockList) {
+				g.drawImage(b.img, b.x, b.y);
+				b.mark(true);
+			}
 
 		}
 
@@ -147,6 +162,9 @@ public class Engine extends BasicGame {
 	@Override
 	public void init(GameContainer arg0) throws SlickException {
 		state = State.Created;
+
+		Tetromino.startX = STARTX + BORDER_SIZE + 135;
+		Tetromino.startY = STARTY + BORDER_SIZE + 1;
 
 		BACKGROUND = new Image("resources/BACKGROUND.png");
 
@@ -189,42 +207,74 @@ public class Engine extends BasicGame {
 
 		if (state.equals(State.Main)) {
 			if (input.isKeyPressed(Input.KEY_LEFT)) {
-				
-				if (!tempBlock.willIntersect("left")) {
-					tempBlock.mark(false);
-					
-					tempBlock.x -= BLOCKSIZE;
-					tempBlock.coordX--;
-				
-					tempBlock.mark(true);
+
+				boolean stop = false;
+				for (Block b : tetromino.leftList) {
+					if (b.willIntersect("left")) {
+						stop = true;
+						System.out.println("STOP!");
+						break;
+					}
 				}
-				
+
+				if (!stop) {
+					for (Block b : tetromino.blockList) {
+						b.mark(false);
+						b.x -= BLOCKSIZE;
+						b.coordX--;
+						b.mark(true);
+					}
+				}
+
 			} else if (input.isKeyPressed(Input.KEY_RIGHT)) {
-				if (!tempBlock.willIntersect("right")) {
-					tempBlock.mark(false);
-
-					tempBlock.x += BLOCKSIZE;
-					tempBlock.coordX++;
+				boolean stop = false;
+				for (Block b : tetromino.rightList) {
+					if (b.willIntersect("right")) {
+						stop = true;
+						System.out.println("STOP!");
+						break;
+					}
 				}
 
-				tempBlock.mark(true);
+				if (!stop) {
+					for (Block b : tetromino.blockList) {
+						b.mark(false);
+						b.x += BLOCKSIZE;
+						b.coordX++;
+						b.mark(true);
+					}
+
+				}
 			} else if (input.isKeyPressed(Input.KEY_SPACE)) {
-				//Full drop
-				
-				tempBlock.mark(false);
-				
-				while (!(tempBlock.willIntersect("down"))) {
-					tempBlock.y += BLOCKSIZE;
-					tempBlock.coordY++;
+				// Full drop
+
+				boolean stop = false;
+
+				while (!stop) {
+					for (Block b : tetromino.bottomList) {
+						if (b.willIntersect("down")) {
+							stop = true;
+							System.out.println("STOP!");
+							break;
+						}
+					}
+
+					if (!stop) {
+						for (Block b : tetromino.blockList) {
+							b.mark(false);
+							b.y += BLOCKSIZE;
+							b.coordY++;
+							b.mark(true);
+							stationaryBlocks.add(b);
+						}
+
+					}
 				}
 				
 				falling = false;
-				stationaryBlocks.add(tempBlock);
-				
-				tempBlock.mark(true);
 
 			} else if (input.isKeyPressed(Input.KEY_P)) {
-				// Prints array
+				// Prints blockArray
 
 				String s = "";
 				for (boolean[] bA : blockArray) {

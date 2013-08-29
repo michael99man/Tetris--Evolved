@@ -4,7 +4,6 @@ import main.Engine;
 
 import org.newdawn.slick.Image;
 import org.newdawn.slick.SlickException;
-import org.newdawn.slick.geom.Rectangle;
 
 public class Block {
 
@@ -17,7 +16,6 @@ public class Block {
 	public int coordX;
 	public int coordY;
 
-	private static final int BLOCKSIZE = 27;
 
 	private static final String[] linkList = { "REDDD", "GREEN",
 			"resources/BLUE_BLOCK.png", "4", "5", "6" };
