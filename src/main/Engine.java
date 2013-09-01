@@ -34,7 +34,6 @@ public class Engine extends BasicGame {
 	public TrueTypeFont title;
 	public TrueTypeFont text;
 
-	
 	// Parent
 	private AppGameContainer parent;
 	private Menu menu;
@@ -45,12 +44,14 @@ public class Engine extends BasicGame {
 	// GAME RELATED STUFF
 	// ----------------------------------------------------------
 	public static State state;
-	
+
 	private Random rand = new Random();
-	
-	private LinkedList<Block> stationaryBlocks = new LinkedList<Block>();
+
+	protected LinkedList<Block> stationaryBlocks = new LinkedList<Block>();
 
 	public static boolean[][] blockArray = new boolean[20][10];
+
+	private static LinkedList<Integer> clearList = new LinkedList<Integer>();
 
 	// If a block is falling
 	private boolean falling = false;
@@ -70,6 +71,9 @@ public class Engine extends BasicGame {
 
 	private static final int BORDER_SIZE = 15;
 
+	private static final int BOARD_HEIGHT = 20;
+	private static final int BOARD_WIDTH = 10;
+	
 	private Rectangle leftBox = new Rectangle(STARTX, STARTY, BORDER_SIZE,
 			BG_HEIGHT + BORDER_SIZE * 2 + 1);
 	private Rectangle rightBox = new Rectangle(STARTX + BORDER_SIZE + BG_WIDTH
@@ -114,11 +118,15 @@ public class Engine extends BasicGame {
 
 			g.drawImage(BACKGROUND, 165, 126);
 
+			// Clears boolean row
+
 			if (!falling) {
 				falling = true;
 
 				
-				tetromino = new Tetromino(Tetromino.Type.values()[rand.nextInt(6)]);
+				tetromino = new Tetromino(Tetromino.Type.reverselBlock);
+				//tetromino = new Tetromino(
+				//		Tetromino.Type.values()[rand.nextInt(6)]);
 			} else if (falling) {
 				if (secondPassed) {
 
@@ -128,8 +136,7 @@ public class Engine extends BasicGame {
 						if (b.willIntersect("down")) {
 							stop = true;
 							falling = false;
-							System.out
-									.println("Tetromino has reached the bottom!");
+							System.out.println("Tetromino has reached the bottom!");
 						}
 					}
 
@@ -149,8 +156,11 @@ public class Engine extends BasicGame {
 				}
 			}
 
+			checkRows();
+
 			for (Block b : stationaryBlocks) {
 				g.drawImage(b.img, b.x, b.y);
+				b.mark(true);
 			}
 
 			for (Block b : tetromino.blockList) {
@@ -187,9 +197,51 @@ public class Engine extends BasicGame {
 		state = State.MainMenu;
 
 	}
-
+	
+	//Checks coordinates
+	public static boolean check(int x, int y){
+		//Returns false if illegal
+		
+		if (x >= BOARD_WIDTH || y >= BOARD_HEIGHT || x < 1 || y < 1 ){
+			System.out.println("Illegal point: (" + x + "," + y + ")");
+			return false;
+		}
+		
+		boolean invalid = blockArray[y][x];
+		
+		if (invalid){
+			System.out.println("(" + x + "," + y + ") occupied.");
+		}
+		return (!invalid);
+	}
+	
 	public static TrueTypeFont requestFont(float size) {
 		return new TrueTypeFont(f.deriveFont(size), true);
+	}
+
+	public void checkRows() {
+
+		// List of cleared rows;
+
+		clearList = new LinkedList<Integer>();
+
+		boolean found = true;
+		/*
+		 * while (found) {
+		 * 
+		 * int i = 1; for (boolean[] bA : blockArray) {
+		 * 
+		 * // True if all filled so far boolean filled = true; for (boolean b :
+		 * bA) { if (!b) { filled = false; } }
+		 * 
+		 * if (filled){ break; } i++; }
+		 * 
+		 * if (filled) { for (Block b : stationaryBlocks) { if (b.coordY == i) {
+		 * stationaryBlocks.remove(b); } } found = true; } else { found = false;
+		 * } i++; }
+		 * 
+		 * doesn't work atm
+		 */
 	}
 
 	@Override
@@ -229,6 +281,7 @@ public class Engine extends BasicGame {
 					}
 				}
 
+				checkRows();
 			} else if (input.isKeyPressed(Input.KEY_RIGHT)) {
 				boolean stop = false;
 				for (Block b : tetromino.rightList) {
@@ -246,8 +299,8 @@ public class Engine extends BasicGame {
 						b.coordX++;
 						b.mark(true);
 					}
-
 				}
+				checkRows();
 			} else if (input.isKeyPressed(Input.KEY_SPACE)) {
 				// Full drop
 
@@ -273,7 +326,7 @@ public class Engine extends BasicGame {
 
 					}
 				}
-
+				checkRows();
 				falling = false;
 
 			} else if (input.isKeyPressed(Input.KEY_P)) {
@@ -291,6 +344,10 @@ public class Engine extends BasicGame {
 					s += "\n";
 				}
 				System.out.println(s);
+			} else if (input.isKeyPressed(Input.KEY_Z)) {
+				tetromino.rotate(false);
+			} else if (input.isKeyPressed(Input.KEY_X)) {
+				tetromino.rotate(true);
 			}
 		} else if (state.equals(State.MainMenu)) {
 			menu.processInput(input);
