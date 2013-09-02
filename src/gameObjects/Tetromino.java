@@ -4,27 +4,22 @@ import gameObjects.Block.Color;
 
 import java.util.LinkedList;
 
-import org.newdawn.slick.Image;
 import org.newdawn.slick.SlickException;
 
 import main.Engine;
 
 public class Tetromino {
 
-	// List of the blocks at the very bottom
-	public LinkedList<Block> bottomList = new LinkedList<Block>();
-
-	// List of blocks at the very right
-	public LinkedList<Block> rightList = new LinkedList<Block>();
-
-	// And left
-	public LinkedList<Block> leftList = new LinkedList<Block>();
 
 	public LinkedList<Block> blockList = new LinkedList<Block>();
 
+	public LinkedList<Point> pointList = new LinkedList<Point>();
+	
 	public static int startX;
 	public static int startY;
 
+	
+	
 	private int cX;
 	private int cY;
 
@@ -36,7 +31,8 @@ public class Tetromino {
 
 	public Tetromino(Type type) throws SlickException {
 		System.out.println("Tetromino created : " + type.name());
-
+		pointList = new LinkedList<Point>();
+		
 		rotateState = 0;
 		this.type = type;
 
@@ -48,97 +44,39 @@ public class Tetromino {
 		cX = STATE_LIST[index][0][0][0];
 		cY = STATE_LIST[index][0][0][1];
 
-		center = new Block(Color.RED, cX, cY);
+		center = new Block(Color.RED, cX, cY, this);
+		pointList.add(center.point);
 		blockList.add(center);
 
 		// Each Tetromino has 4 blocks
 		for (int i = 1; i < 4; i++) {
 			Block b = new Block(c, cX + STATE_LIST[index][0][i][0], cY
-					+ STATE_LIST[index][0][i][1]);
+					+ STATE_LIST[index][0][i][1], this);
 			blockList.add(b);
+			pointList.add(b.point);
 		}
 		processList(blockList, this);
-
-		/*
-		 * if (type.equals(Type.iBlock)) { // The Long one
-		 * 
-		 * // Placeholder Color Color c = Block.Color.BLUE;
-		 * 
-		 * Block b1 = new Block(c, 4, 1); center = new Block(c, 5, 1); Block b3
-		 * = new Block(c, 6, 1); Block b4 = new Block(c, 7, 1);
-		 * 
-		 * blockList.add(b1); blockList.add(center); blockList.add(b3);
-		 * blockList.add(b4);
-		 * 
-		 * processList(blockList, this); }
-		 * 
-		 * else if (type.equals(Type.lBlock)) { Color c = Block.Color.BLUE;
-		 * 
-		 * Block b1 = new Block(c, 4, 1); center = new Block(c, 4, 2); Block b3
-		 * = new Block(c, 5, 2); Block b4 = new Block(c, 6, 2);
-		 * 
-		 * blockList.add(b1); blockList.add(center); blockList.add(b3);
-		 * blockList.add(b4);
-		 * 
-		 * processList(blockList, this); } else if
-		 * (type.equals(Type.reverselBlock)) { Color c = Block.Color.BLUE;
-		 * 
-		 * Block b1 = new Block(c, 6, 1); Block b2 = new Block(c, 4, 2); Block
-		 * b3 = new Block(c, 5, 2); center = new Block(c, 6, 2);
-		 * 
-		 * blockList.add(b1); blockList.add(b2); blockList.add(b3);
-		 * blockList.add(center);
-		 * 
-		 * processList(blockList, this); } else if (type.equals(Type.oBlock)) {
-		 * Color c = Block.Color.BLUE;
-		 * 
-		 * Block b1 = new Block(c, 5, 1); Block b2 = new Block(c, 6, 1); Block
-		 * b3 = new Block(c, 5, 2); Block b4 = new Block(c, 6, 2);
-		 * 
-		 * blockList.add(b1); blockList.add(b2); blockList.add(b3);
-		 * blockList.add(b4);
-		 * 
-		 * processList(blockList, this);
-		 * 
-		 * } else if (type.equals(Type.sBlock)) {
-		 * 
-		 * Color c = Block.Color.BLUE;
-		 * 
-		 * Block b1 = new Block(c, 5, 1); Block b2 = new Block(c, 6, 1); Block
-		 * b3 = new Block(c, 4, 2); center = new Block(c, 5, 2);
-		 * 
-		 * blockList.add(b1); blockList.add(b2); blockList.add(b3);
-		 * blockList.add(center); processList(blockList, this); } else if
-		 * (type.equals(Type.zBlock)) { Color c = Block.Color.BLUE;
-		 * 
-		 * Block b1 = new Block(c, 4, 1); Block b2 = new Block(c, 5, 1); center
-		 * = new Block(c, 5, 2); Block b4 = new Block(c, 6, 2);
-		 * 
-		 * blockList.add(b1); blockList.add(b2); blockList.add(center);
-		 * blockList.add(b4); processList(blockList, this); } else if
-		 * (type.equals(Type.tBlock)) { Color c = Block.Color.BLUE;
-		 * 
-		 * Block b1 = new Block(c, 5, 1); Block b2 = new Block(c, 4, 2); center
-		 * = new Block(c, 5, 2); Block b4 = new Block(c, 6, 2);
-		 * 
-		 * blockList.add(b1); blockList.add(b2); blockList.add(center);
-		 * blockList.add(b4); processList(blockList, this); }
-		 */
 
 	}
 
 	public static void processList(LinkedList<Block> blockList, Tetromino t) {
+		
+		/*
 		int left = 0, right = 0, bottom = 0;
+
+
+		// initialization
+		t.rightList = new LinkedList<Block>();
+		t.leftList = new LinkedList<Block>();
+		t.bottomList = new LinkedList<Block>();
+		
 
 		for (Block b : blockList) {
 
+			
+		
 			// Taking care of something that should be done on Tetromino
-
-			// initialization
-			t.rightList = new LinkedList<Block>();
-			t.leftList = new LinkedList<Block>();
-			t.bottomList = new LinkedList<Block>();
-
+			
 			b.mark(true);
 			if (b.coordX > right) {
 				right = b.coordX;
@@ -157,7 +95,7 @@ public class Tetromino {
 		// + " Bottommost: " + bottom);
 
 		for (Block b : blockList) {
-			if (b.coordX == right) {
+			if (b.Point.coordX == right) {
 				t.rightList.add(b);
 			}
 
@@ -169,6 +107,7 @@ public class Tetromino {
 				t.bottomList.add(b);
 			}
 		}
+		*/
 	}
 
 	public static enum Type {
@@ -230,7 +169,10 @@ public class Tetromino {
 
 	public void rotate(boolean right) throws SlickException {
 
-		//4 Possible Rotate States 0 (Original),1,2,3
+		pointList = new LinkedList<Point>();
+		pointList.add(center.point);
+		
+		// 4 Possible Rotate States 0 (Original),1,2,3
 		if (right) {
 			if (rotateState == 3) {
 				rotateState = 0;
@@ -247,20 +189,23 @@ public class Tetromino {
 
 		System.out.println("Rotate State = " + rotateState);
 
-		//Update cX, cY
-		cX = center.coordX;
-		cY = center.coordY;
+		// Update cX, cY
+		cX = center.point.x;
+		cY = center.point.y;
+
 		
-		for (Block b : blockList){
+		for (Block b : blockList) {
 			b.mark(false);
 		}
-		
+
+		//System.out.println("Center at " + cX + "," + cY);
+
 		int i = 0;
-		if (!rotateLegal(STATE_LIST[type.ordinal()][rotateState])){
+		if (!rotateLegal(STATE_LIST[type.ordinal()][rotateState])) {
 			System.out.println("Rotation failed.");
-			
-			//Undos Rotation State change
-			
+
+			// Undos Rotation State change
+
 			if (right) {
 				if (rotateState == 0) {
 					rotateState = 3;
@@ -273,34 +218,46 @@ public class Tetromino {
 				} else {
 					rotateState++;
 				}
-			}		
+			}
 			return;
 		}
-		
+
 		for (Block b : blockList) {
 			// If not Center
 			if (i != 0) {
 				b.mark(false);
-				b.coordX = cX + STATE_LIST[type.ordinal()][rotateState][i][0];
-				b.coordY = cY + STATE_LIST[type.ordinal()][rotateState][i][1];
+				b.point = new Point(cX + STATE_LIST[type.ordinal()][rotateState][i][0], cY + STATE_LIST[type.ordinal()][rotateState][i][1]);
 				b.refresh();
+				pointList.add(b.point);
 			}
 			b.mark(true);
 			i++;
 		}
+		
 		processList(blockList, this);
 
 	}
-	
-	
-	private boolean rotateLegal(int[][] array){
-		
-		for (int i = 1; i<4; i++){
-			System.out.println("Checking (" + (cX + array[i][0]) + "," + (cY + array[i][1]) + ")");
-			if (!Engine.check(cX + array[i][0], cY + array[i][1])){
+
+	private boolean rotateLegal(int[][] array) {
+
+		for (int i = 1; i < 4; i++) {
+			// System.out.println("Checking (" + (cX + array[i][0]) + "," + (cY
+			// + array[i][1]) + ")");
+			if (!Engine.check(cX + array[i][0], cY + array[i][1])) {
 				return false;
 			}
 		}
 		return true;
+	}
+	
+	public boolean includes(int x, int y){
+		//System.out.println("CHECKING (" + x + "," + y + ")");
+		for (Point p: pointList){
+			//System.out.println("(" + p.x + "," + p.y + ")");
+			if (p.x == x && p.y == y){
+				return true;
+			}
+		}
+		return false;
 	}
 }

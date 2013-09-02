@@ -10,28 +10,30 @@ public class Block {
 	public Color color;
 	public Image img;
 
+	// X,Y positions of the IMG
 	public int x;
 	public int y;
 
-	public int coordX;
-	public int coordY;
+	public Point point;
+
+	public Tetromino parent = null;
+
+	// public int coordX;
+	// public int coordY;
 
 	// CYAN, ORANGE, BLUE, YELLOW, GREEN, PURPlE, RED
 	private static final String[] linkList = { "CYAN", "ORANGE",
 			"resources/BLUE_BLOCK.png", "YELLOW", "GREEN", "PURPLE",
 			"resources/RED_BLOCK.png" };
 
-	public Block(Color color, int x, int y) throws SlickException {
+	public Block(Color color, int x, int y, Tetromino t) throws SlickException {
 		this.color = color;
-
-		//System.out.println("Block created at Coords: " + x + "," + y);
-		coordX = x;
-		coordY = y;
-
+		// System.out.println("Block created at Coords: " + x + "," + y);
+		point = new Point(x, y);
 		refresh();
 
 		img = new Image(linkList[color.ordinal()]);
-
+		parent = t;
 	}
 
 	// iBlock, reverselBlock, lBlock, oBlock, sBlock, tBlock, zBlock,
@@ -42,37 +44,54 @@ public class Block {
 	public boolean willIntersect(String direction) {
 
 		try {
-
 			if (direction.equalsIgnoreCase("down")) {
 				// Catching maximum triggers (20, 1, 10)
-				if (coordY == 20) {
+			
+				if (point.y >= 20) {
+					System.out.println("REACHED THE BOTTOM");
 					return true;
 				}
 
-				if (Engine.blockArray[coordY - 1 + 1][coordX - 1]) {
+				if (Engine.blockArray[point.y - 1 + 1][point.x - 1]) {
+					if (!parent.equals(null)) {
+						if (parent.includes(point.x,point.y+1)){
+							return false;
+						}
+					}
 					return true;
 				}
 			} else if (direction.equalsIgnoreCase("left")) {
 
-				if (coordX == 1) {
+				if (point.x == 1) {
 					return true;
 				}
 
-				if (Engine.blockArray[coordY - 1][coordX - 1 - 1]) {
+				if (Engine.blockArray[point.y - 1][point.x - 1 - 1]) {
+					if (!parent.equals(null)) {
+						if (parent.includes(point.x-1,point.y)){
+							return false;
+						}
+					}
 					return true;
 				}
 			} else if (direction.equalsIgnoreCase("right")) {
-				if (coordX == 10) {
+				if (point.x == 10) {
 					return true;
 				}
 
-				if (Engine.blockArray[coordY - 1][coordX - 1 + 1]) {
+				if (Engine.blockArray[point.y - 1][point.x - 1 + 1]) {
+					if (!parent.equals(null)) {
+						if (parent.includes(point.x+1,point.y)){
+							return false;
+						}
+					}
 					return true;
+					
 				}
 			}
 
 		} catch (Exception e) {
-			System.out.println("EXCEPTION: x - " + coordX + " y - " + coordY);
+			//System.out.println("EXCEPTION: x - " + point.x + " y - " + point.y);
 		}
 
 		return false;
@@ -82,22 +101,21 @@ public class Block {
 	// Methods to get the X/Y positions based on Coordinates.
 	// Essentially refreshes the block based on coordX, coordY
 	public void refresh() {
-		x = 165 + ((coordX - 1) * Engine.BLOCKSIZE);
-		y = 125 + ((coordY - 1) * Engine.BLOCKSIZE);
+		x = 165 + ((point.x - 1) * Engine.BLOCKSIZE);
+		y = 125 + ((point.y - 1) * Engine.BLOCKSIZE);
 	}
 
 	public void mark(boolean b) {
-		if (coordY <= 0) {
+		if (point.y <= 0 || point.y > Engine.BOARD_HEIGHT) {
 			//System.out.println("ERROR: Y");
 			return;
 		}
-		if (coordX <= 0) {
+		if (point.x <= 0 || point.x > Engine.BOARD_WIDTH) {
 			//System.out.println("ERROR: X");
 			return;
 		}
 		// 2D array is [Y VALUE][X VALUE]
-		Engine.blockArray[coordY - 1][coordX - 1] = b;
+		Engine.blockArray[point.y - 1][point.x - 1] = b;
 	}
-	
 
 }

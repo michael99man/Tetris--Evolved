@@ -1,6 +1,7 @@
 package main;
 
 import gameObjects.Block;
+import gameObjects.Point;
 import gameObjects.Tetromino;
 
 import java.awt.Font;
@@ -55,7 +56,6 @@ public class Engine extends BasicGame {
 
 	// If a block is falling
 	private boolean falling = false;
-	private Block tempBlock;
 	private Tetromino tetromino;
 
 	// Temporary Borders and Background
@@ -71,9 +71,9 @@ public class Engine extends BasicGame {
 
 	private static final int BORDER_SIZE = 15;
 
-	private static final int BOARD_HEIGHT = 20;
-	private static final int BOARD_WIDTH = 10;
-	
+	public static final int BOARD_HEIGHT = 20;
+	public static final int BOARD_WIDTH = 10;
+
 	private Rectangle leftBox = new Rectangle(STARTX, STARTY, BORDER_SIZE,
 			BG_HEIGHT + BORDER_SIZE * 2 + 1);
 	private Rectangle rightBox = new Rectangle(STARTX + BORDER_SIZE + BG_WIDTH
@@ -118,56 +118,17 @@ public class Engine extends BasicGame {
 
 			g.drawImage(BACKGROUND, 165, 126);
 
-			// Clears boolean row
-
-			if (!falling) {
-				falling = true;
-
-				
-				tetromino = new Tetromino(Tetromino.Type.reverselBlock);
-				//tetromino = new Tetromino(
-				//		Tetromino.Type.values()[rand.nextInt(6)]);
-			} else if (falling) {
-				if (secondPassed) {
-
-					boolean stop = false;
-
-					for (Block b : tetromino.bottomList) {
-						if (b.willIntersect("down")) {
-							stop = true;
-							falling = false;
-							System.out.println("Tetromino has reached the bottom!");
-						}
-					}
-
-					if (!stop) {
-						for (Block b : tetromino.blockList) {
-							b.mark(false);
-							b.y += BLOCKSIZE;
-							b.coordY++;
-							// Marking done at the end.
-
-						}
-					} else {
-						for (Block b : tetromino.blockList) {
-							stationaryBlocks.add(b);
-						}
-					}
-				}
-			}
-
-			checkRows();
-
 			for (Block b : stationaryBlocks) {
+				b.refresh();
 				g.drawImage(b.img, b.x, b.y);
 				b.mark(true);
 			}
 
 			for (Block b : tetromino.blockList) {
+				b.refresh();
 				g.drawImage(b.img, b.x, b.y);
 				b.mark(true);
 			}
-
 		}
 
 	}
@@ -197,56 +158,88 @@ public class Engine extends BasicGame {
 		state = State.MainMenu;
 
 	}
-	
-	//Checks coordinates
-	public static boolean check(int x, int y){
-		//Returns false if illegal
-		
-		if (x >= BOARD_WIDTH || y >= BOARD_HEIGHT || x < 1 || y < 1 ){
+
+	// Checks coordinates
+	public static boolean check(int x, int y) {
+		// Returns false if illegal
+
+		if (x > BOARD_WIDTH || y > BOARD_HEIGHT || x < 1 || y < 1) {
 			System.out.println("Illegal point: (" + x + "," + y + ")");
 			return false;
 		}
-		
-		boolean invalid = blockArray[y][x];
-		
-		if (invalid){
+
+		boolean invalid = blockArray[y - 1][x - 1];
+
+		if (invalid) {
 			System.out.println("(" + x + "," + y + ") occupied.");
 		}
 		return (!invalid);
 	}
-	
+
 	public static TrueTypeFont requestFont(float size) {
 		return new TrueTypeFont(f.deriveFont(size), true);
 	}
 
+	private void clearRow(int y) {
+
+		LinkedList<Block> tempList = new LinkedList<Block>();
+		System.out.println(tempList.size() + " BLOCKS ORIGINALLY IN TEMPLIST");
+		blockArray[y - 1] = new boolean[10];
+
+		for (int i = 0; i < 10; i++) {
+			blockArray[y - 1][i] = false;
+		}
+
+		System.out.println(stationaryBlocks.size()
+				+ " BLOCKS IN STATIONARYBLOCKS");
+		for (Block b : stationaryBlocks) {
+			if (b.point.y == y) {
+
+				tempList.add(b);
+				// System.out.println("Cleared a block");
+			} else if (b.point.y < y) {
+				b.mark(false);
+				b.point.y++;
+				b.refresh();
+				b.mark(true);
+			}
+		}
+
+		System.out.println(tempList.size() + " BLOCKS IN TEMPLIST");
+		for (Block b : tempList) {
+			stationaryBlocks.remove(b);
+		}
+	}
+
 	public void checkRows() {
 
-		// List of cleared rows;
+		// clearList = new LinkedList<Integer>();
 
-		clearList = new LinkedList<Integer>();
+		int i = 1;
+		for (boolean[] bA : blockArray) {
+			boolean found = true;
 
-		boolean found = true;
-		/*
-		 * while (found) {
-		 * 
-		 * int i = 1; for (boolean[] bA : blockArray) {
-		 * 
-		 * // True if all filled so far boolean filled = true; for (boolean b :
-		 * bA) { if (!b) { filled = false; } }
-		 * 
-		 * if (filled){ break; } i++; }
-		 * 
-		 * if (filled) { for (Block b : stationaryBlocks) { if (b.coordY == i) {
-		 * stationaryBlocks.remove(b); } } found = true; } else { found = false;
-		 * } i++; }
-		 * 
-		 * doesn't work atm
-		 */
+			for (boolean b : bA) {
+				if (!b) {
+					found = false;
+				}
+			}
+
+			if (found) {
+				System.out.println("Clear!");
+				// clearList.add(i);
+				clearRow(i);
+			}
+			found = false;
+			i++;
+		}
+
 	}
 
 	@Override
 	public void update(GameContainer arg0, int arg1) throws SlickException {
 		secondPassed = false;
+		checkRows();
 
 		// Times game
 		renderTicks++;
@@ -264,7 +257,7 @@ public class Engine extends BasicGame {
 			if (input.isKeyPressed(Input.KEY_LEFT)) {
 
 				boolean stop = false;
-				for (Block b : tetromino.leftList) {
+				for (Block b : tetromino.blockList) {
 					if (b.willIntersect("left")) {
 						stop = true;
 						System.out.println("STOP!");
@@ -276,7 +269,7 @@ public class Engine extends BasicGame {
 					for (Block b : tetromino.blockList) {
 						b.mark(false);
 						b.x -= BLOCKSIZE;
-						b.coordX--;
+						b.point.x--;
 						b.mark(true);
 					}
 				}
@@ -284,7 +277,7 @@ public class Engine extends BasicGame {
 				checkRows();
 			} else if (input.isKeyPressed(Input.KEY_RIGHT)) {
 				boolean stop = false;
-				for (Block b : tetromino.rightList) {
+				for (Block b : tetromino.blockList) {
 					if (b.willIntersect("right")) {
 						stop = true;
 						System.out.println("STOP!");
@@ -296,7 +289,7 @@ public class Engine extends BasicGame {
 					for (Block b : tetromino.blockList) {
 						b.mark(false);
 						b.x += BLOCKSIZE;
-						b.coordX++;
+						b.point.x++;
 						b.mark(true);
 					}
 				}
@@ -307,7 +300,7 @@ public class Engine extends BasicGame {
 				boolean stop = false;
 
 				while (!stop) {
-					for (Block b : tetromino.bottomList) {
+					for (Block b : tetromino.blockList) {
 						if (b.willIntersect("down")) {
 							stop = true;
 							System.out.println("STOP!");
@@ -319,14 +312,17 @@ public class Engine extends BasicGame {
 						for (Block b : tetromino.blockList) {
 							b.mark(false);
 							b.y += BLOCKSIZE;
-							b.coordY++;
+							b.point.y++;
 							b.mark(true);
+
+						}
+					} else if (stop) {
+						for (Block b : tetromino.blockList) {
+							System.out.println("ADDED TO STATIONARYBLOCKS");
 							stationaryBlocks.add(b);
 						}
-
 					}
 				}
-				checkRows();
 				falling = false;
 
 			} else if (input.isKeyPressed(Input.KEY_P)) {
@@ -357,6 +353,49 @@ public class Engine extends BasicGame {
 		if (input.isKeyDown(Input.KEY_F)) {
 			parent.setFullscreen(parent.isFullscreen() ? false : true);
 		}
+
+		// Main processing
+
+		if (state.equals(State.Main)) {
+			if (!falling) {
+				falling = true;
+
+				tetromino = new Tetromino(Tetromino.Type.reverselBlock);
+				// tetromino = new Tetromino(
+				// Tetromino.Type.values()[rand.nextInt(6)]);
+			} else if (falling) {
+				if (secondPassed) {
+
+					boolean stop = false;
+
+					for (Block b : tetromino.blockList) {
+						if (b.willIntersect("down")) {
+							stop = true;
+							falling = false;
+
+							System.out
+									.println("Tetromino has reached the bottom!");
+						}
+					}
+
+					if (!stop) {
+						for (Block b : tetromino.blockList) {
+							b.mark(false);
+							b.point.y++;
+							b.refresh();
+							b.mark(true);
+						}
+					} else if (stop) {
+						for (Block b : tetromino.blockList) {
+							System.out.println("ADDED TO STATIONARYBLOCKS");
+							stationaryBlocks.add(b);
+						}
+					}
+
+				}
+			}
+		}
+		checkRows();
 	}
 
 	public void setContainer(AppGameContainer app) {
