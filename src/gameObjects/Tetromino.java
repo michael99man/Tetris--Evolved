@@ -169,8 +169,9 @@ public class Tetromino {
 
 	public void rotate(boolean right) throws SlickException {
 
-		pointList = new LinkedList<Point>();
-		pointList.add(center.point);
+		if (type.equals(Type.oBlock)){
+			return;
+		}
 		
 		// 4 Possible Rotate States 0 (Original),1,2,3
 		if (right) {
@@ -186,24 +187,14 @@ public class Tetromino {
 				rotateState--;
 			}
 		}
-
-		System.out.println("Rotate State = " + rotateState);
-
+		
 		// Update cX, cY
 		cX = center.point.x;
 		cY = center.point.y;
 
 		
-		for (Block b : blockList) {
-			b.mark(false);
-		}
-
-		//System.out.println("Center at " + cX + "," + cY);
-
-		int i = 0;
 		if (!rotateLegal(STATE_LIST[type.ordinal()][rotateState])) {
 			System.out.println("Rotation failed.");
-
 			// Undos Rotation State change
 
 			if (right) {
@@ -219,9 +210,17 @@ public class Tetromino {
 					rotateState++;
 				}
 			}
+			
 			return;
 		}
 
+		pointList = new LinkedList<Point>();
+		pointList.add(center.point);
+		
+		System.out.println("Rotate State = " + rotateState);
+		
+		int i = 0;
+		
 		for (Block b : blockList) {
 			// If not Center
 			if (i != 0) {
@@ -229,8 +228,8 @@ public class Tetromino {
 				b.point = new Point(cX + STATE_LIST[type.ordinal()][rotateState][i][0], cY + STATE_LIST[type.ordinal()][rotateState][i][1]);
 				b.refresh();
 				pointList.add(b.point);
+				b.mark(true);
 			}
-			b.mark(true);
 			i++;
 		}
 		
@@ -243,7 +242,7 @@ public class Tetromino {
 		for (int i = 1; i < 4; i++) {
 			// System.out.println("Checking (" + (cX + array[i][0]) + "," + (cY
 			// + array[i][1]) + ")");
-			if (!Engine.check(cX + array[i][0], cY + array[i][1])) {
+			if (!(Engine.check(cX + array[i][0], cY + array[i][1]))) {
 				return false;
 			}
 		}
