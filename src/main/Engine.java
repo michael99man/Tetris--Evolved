@@ -13,6 +13,7 @@ import java.util.Random;
 
 import menu.MainMenu;
 import menu.Menu;
+import menu.PauseMenu;
 
 import org.newdawn.slick.AppGameContainer;
 import org.newdawn.slick.BasicGame;
@@ -89,7 +90,7 @@ public class Engine extends BasicGame {
 		super(title);
 	}
 
-	private enum State {
+	public enum State {
 
 		Created, MainMenu, Main, Paused,
 		// etc
@@ -109,33 +110,38 @@ public class Engine extends BasicGame {
 			// Temp graphics
 
 			// Temporary dimensions
-
-			g.setColor(Color.red);
-			g.draw(botBox);
-			g.draw(topBox);
-			g.draw(leftBox);
-			g.draw(rightBox);
-			g.setColor(Color.white);
-
-			g.drawImage(BACKGROUND, 165, 126);
-
-			g.drawString(player1.name + " SCORE: " + player1.score, 100, 40);
-			
-			for (Block b : stationaryBlocks) {
-				b.refresh();
-				g.drawImage(b.img, b.x, b.y);
-				b.mark(true);
-			}
-
-			for (Block b : tetromino.blockList) {
-				b.refresh();
-				g.drawImage(b.img, b.x, b.y);
-				b.mark(true);
-			}
+			drawMain(g);
+		} else if(state.equals(State.Paused)){
+			drawMain(g);
+			menu.render(arg0, g);
 		}
 
 	}
 
+	public void drawMain(Graphics g){
+		g.setColor(Color.red);
+		g.draw(botBox);
+		g.draw(topBox);
+		g.draw(leftBox);
+		g.draw(rightBox);
+		g.setColor(Color.white);
+
+		g.drawImage(BACKGROUND, 165, 126);
+
+		g.drawString(player1.name + " SCORE: " + player1.score, 100, 40);
+		for (Block b : stationaryBlocks) {
+			b.refresh();
+			g.drawImage(b.img, b.x, b.y);
+			b.mark(true);
+		}
+
+		for (Block b : tetromino.blockList) {
+			b.refresh();
+			g.drawImage(b.img, b.x, b.y);
+			b.mark(true);
+		}
+	}
+	
 	@Override
 	public void init(GameContainer arg0) throws SlickException {
 		state = State.Created;
@@ -359,8 +365,12 @@ public class Engine extends BasicGame {
 				tetromino.rotate(false);
 			} else if (input.isKeyPressed(Input.KEY_X)) {
 				tetromino.rotate(true);
+			} else if (input.isKeyPressed(Input.KEY_ESCAPE)){
+				state = State.Paused;
+				menu=new PauseMenu();
+				System.out.println("PAUSED");
 			}
-		} else if (state.equals(State.MainMenu)) {
+		} else if (state.equals(State.MainMenu) || state.equals(State.Paused)) {
 			menu.processInput(input);
 		}
 

@@ -27,8 +27,6 @@ public class MainMenu implements Menu {
 		
 		
 		g.setFont(titleFont);
-
-
 		int y = 100;
 		for (String s : stringList) {
 

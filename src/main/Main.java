@@ -23,7 +23,6 @@ public class Main {
 			
 			engine.setContainer(app);
 			
-			
 			//Basic setup
 			app.setShowFPS(true);
 			
@@ -33,8 +32,6 @@ public class Main {
 			//app.setMaximumLogicUpdateInterval(1);
 			//app.setMinimumLogicUpdateInterval(1);
 			
-
-
 			//app.setFullscreen(true);
 			app.start();
 			
