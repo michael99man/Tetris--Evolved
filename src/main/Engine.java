@@ -8,6 +8,8 @@ import gameObjects.Tetromino.Type;
 
 import java.awt.Font;
 import java.io.File;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.LinkedList;
 import java.util.Random;
 
@@ -56,10 +58,11 @@ public class Engine extends BasicGame {
 	// If a block is falling
 	private boolean falling = false;
 	private static Tetromino tetromino;
-	
-	
+
+	private static int streak = 0;
+
 	private static final int SCORE_VALUE = 100;
-	
+
 	// Temporary Borders and Background
 
 	private static Image BACKGROUND;
@@ -111,14 +114,14 @@ public class Engine extends BasicGame {
 
 			// Temporary dimensions
 			drawMain(g);
-		} else if(state.equals(State.Paused)){
+		} else if (state.equals(State.Paused)) {
 			drawMain(g);
 			menu.render(arg0, g);
 		}
 
 	}
 
-	public void drawMain(Graphics g){
+	public void drawMain(Graphics g) {
 		g.setColor(Color.red);
 		g.draw(botBox);
 		g.draw(topBox);
@@ -141,7 +144,7 @@ public class Engine extends BasicGame {
 			b.mark(true);
 		}
 	}
-	
+
 	@Override
 	public void init(GameContainer arg0) throws SlickException {
 		state = State.Created;
@@ -178,7 +181,7 @@ public class Engine extends BasicGame {
 
 		boolean invalid = blockArray[y - 1][x - 1];
 
-		if (invalid && !tetromino.includes(x,y)) {
+		if (invalid && !tetromino.includes(x, y)) {
 			System.out.println("(" + x + "," + y + ") occupied.");
 			return false;
 		}
@@ -200,7 +203,6 @@ public class Engine extends BasicGame {
 
 		for (Block b : stationaryBlocks) {
 			if (b.point.y == y) {
-
 				tempList.add(b);
 				// System.out.println("Cleared a block");
 			} else if (b.point.y < y) {
@@ -232,20 +234,31 @@ public class Engine extends BasicGame {
 
 			if (found) {
 				clearList.add(i);
-
 			}
-			found = false;
 			i++;
 		}
 
-		
-		if (clearList.size() > 0){
-			System.out.println("CLEARLIST - " + clearList.size());
-			player1.score += (clearList.size() - 1 * SCORE_VALUE);
+		if (clearList.size() == 0 && streak != 0) {
+			System.out.println("STREAK RESET");
+			streak = 0;
 		}
 
 		
+		if (clearList.size()!=0){
+			System.out.println("\n");
+			for (int j :clearList){
+				System.out.println("ROW: " + j);
+			}
+		}
 		for (int y : clearList) {
+			System.out.println("CLEAR");
+			
+			if (streak == 0) {
+				streak += 1;
+			} else {
+				streak += 1;
+				player1.score += 200 + 75 * streak;
+			}
 			clearRow(y);
 		}
 
@@ -287,8 +300,6 @@ public class Engine extends BasicGame {
 						b.mark(true);
 					}
 				}
-
-				checkRows();
 			} else if (input.isKeyPressed(Input.KEY_RIGHT)) {
 				boolean stop = false;
 				for (Block b : tetromino.blockList) {
@@ -307,7 +318,6 @@ public class Engine extends BasicGame {
 						b.mark(true);
 					}
 				}
-				checkRows();
 			} else if (input.isKeyPressed(Input.KEY_SPACE)) {
 				// Full drop
 
@@ -330,13 +340,14 @@ public class Engine extends BasicGame {
 							b.mark(true);
 
 						}
-					} else if (stop) {
-						for (Block b : tetromino.blockList) {
-							System.out.println("ADDED TO STATIONARYBLOCKS");
-							stationaryBlocks.add(b);
-						}
 					}
 				}
+				
+				for (Block b : tetromino.blockList) {
+					System.out.println("ADDED TO STATIONARYBLOCKS");
+					stationaryBlocks.add(b);
+				}
+				checkRows();
 				falling = false;
 
 			} else if (input.isKeyPressed(Input.KEY_P)) {
@@ -354,20 +365,20 @@ public class Engine extends BasicGame {
 					s += "\n";
 				}
 				System.out.println(s);
-				
+
 				String str = "";
-				for (Point p : tetromino.pointList){
+				for (Point p : tetromino.pointList) {
 					str += ("(" + p.x + "," + p.y + "), ");
 				}
 				System.out.println(str);
-				
+
 			} else if (input.isKeyPressed(Input.KEY_Z)) {
 				tetromino.rotate(false);
 			} else if (input.isKeyPressed(Input.KEY_X)) {
 				tetromino.rotate(true);
-			} else if (input.isKeyPressed(Input.KEY_ESCAPE)){
+			} else if (input.isKeyPressed(Input.KEY_ESCAPE)) {
 				state = State.Paused;
-				menu=new PauseMenu();
+				menu = new PauseMenu();
 				System.out.println("PAUSED");
 			}
 		} else if (state.equals(State.MainMenu) || state.equals(State.Paused)) {
@@ -382,11 +393,11 @@ public class Engine extends BasicGame {
 		// Main processing
 
 		if (state.equals(State.Main)) {
-			checkRows();
 			if (!falling) {
 				falling = true;
-				//tetromino = new Tetromino(Type.reverselBlock);
-				tetromino = new Tetromino(Tetromino.Type.values()[rand.nextInt(6)]);
+				tetromino = new Tetromino(Type.iBlock);
+				//tetromino = new Tetromino(
+					//	Tetromino.Type.values()[rand.nextInt(6)]);
 			} else if (falling) {
 				if (secondPassed) {
 
@@ -416,10 +427,10 @@ public class Engine extends BasicGame {
 					}
 
 				}
+				checkRows();
 			}
-			checkRows();
 		}
-		
+
 	}
 
 	public void setContainer(AppGameContainer app) {
@@ -428,7 +439,7 @@ public class Engine extends BasicGame {
 
 	public void startGame() {
 		state = State.Main;
-		
+
 		player1 = new Player("Michael");
 		// START MAIN GAMEPLAY
 
